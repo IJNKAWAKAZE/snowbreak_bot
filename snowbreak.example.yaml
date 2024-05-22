@@ -1,0 +1,18 @@
+bot:
+  # 机器人userName
+  name: FennyGolden_bot
+  # 机器人token
+  token:
+  # 拥有者userId
+  owner:
+  # 消息删除延迟
+  msg_del_delay: 10
+
+sticker:
+  ping: CAACAgUAAxkBAAPBZYTpA2TK3cnNG1CfXiLG_9Yo7t8AAiYEAAML4FddSAYCSfeu2jME
+
+redis:
+  addr: localhost:6379
+  pwd: 123456
+  db: 0
+  pool_size: 20
