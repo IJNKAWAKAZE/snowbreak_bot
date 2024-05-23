@@ -1,11 +1,15 @@
 package gatekeeper
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
+	"github.com/nfnt/resize"
+	"image/png"
 	"log"
 	"math/big"
+	"net/http"
 	bot "snowbreak_bot/config"
 	"snowbreak_bot/utils"
 	"time"
@@ -66,7 +70,20 @@ func VerifyMember(message *tgbotapi.Message) {
 	inlineKeyboardMarkup := tgbotapi.NewInlineKeyboardMarkup(
 		buttons...,
 	)
-	sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FileBytes{Bytes: utils.GetImg(correct.ThumbURL)})
+	pic, err := http.Get(correct.ThumbURL)
+	if err != nil {
+		log.Println("获取图片失败", err)
+		return
+	}
+	m, err := png.Decode(pic.Body)
+	if err != nil {
+		log.Println("解析图片失败", err)
+		return
+	}
+	resize := resize.Resize(0, 2000, m, resize.Lanczos3)
+	buf := new(bytes.Buffer)
+	png.Encode(buf, resize)
+	sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FileBytes{Bytes: buf.Bytes()})
 	sendPhoto.ReplyMarkup = inlineKeyboardMarkup
 	sendPhoto.Caption = fmt.Sprintf("欢迎[%s](tg://user?id=%d)，请选择上图角色的正确名字，60秒未选择自动踢出。", tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, name), userId)
 	sendPhoto.ParseMode = tgbotapi.ModeMarkdownV2
