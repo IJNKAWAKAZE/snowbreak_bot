@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"github.com/spf13/viper"
 	"github.com/starudream/go-lib/core/v2/codec/json"
 	"log"
 	"net/http"
@@ -21,7 +22,8 @@ func UpdateDataSourceRunner() {
 	log.Println("开始更新数据源...")
 	var chars []utils.Character
 	var charMap = make(map[string]string)
-	response, _ := http.Get("https://wiki.biligame.com/sonw/%E8%A7%92%E8%89%B2")
+	api := viper.GetString("api.wiki")
+	response, _ := http.Get(api + "%E8%A7%92%E8%89%B2")
 	doc, _ := goquery.NewDocumentFromReader(response.Body)
 	doc.Find(".L").Each(func(i int, selection *goquery.Selection) {
 		charMap[selection.Text()] = selection.Text()
@@ -30,7 +32,7 @@ func UpdateDataSourceRunner() {
 	for _, v := range charMap {
 		var char utils.Character
 		char.Name = v
-		response, _ := http.Get("https://wiki.biligame.com/sonw/" + v)
+		response, _ := http.Get(api + v)
 		doc, _ := goquery.NewDocumentFromReader(response.Body)
 		doc.Find(".image img").Each(func(i int, selection *goquery.Selection) {
 			if i == 0 {

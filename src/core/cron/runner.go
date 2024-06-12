@@ -5,13 +5,20 @@ import (
 	"log"
 	"snowbreak_bot/plugins/datasource"
 	"snowbreak_bot/plugins/messagecleaner"
+	"snowbreak_bot/plugins/snowbreaknews"
 )
 
 func StartCron() error {
 	crontab := cron.New(cron.WithSeconds())
 
+	//尘白禁区bilibili动态 0/30 * * * * ?
+	_, err := crontab.AddFunc("0/30 * * * * ?", snowbreaknews.BilibiliNews)
+	if err != nil {
+		return err
+	}
+
 	//每周五凌晨2点33更新数据源 0 33 02 ? * FRI
-	_, err := crontab.AddFunc("0 33 02 ? * FRI", datasource.UpdateDataSource())
+	_, err = crontab.AddFunc("0 33 02 ? * FRI", datasource.UpdateDataSource())
 	if err != nil {
 		return err
 	}

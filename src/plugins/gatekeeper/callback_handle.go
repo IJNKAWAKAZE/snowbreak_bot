@@ -1,10 +1,8 @@
 package gatekeeper
 
 import (
-	"fmt"
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	bot "snowbreak_bot/config"
-	"snowbreak_bot/utils"
 	"strconv"
 	"strings"
 )
@@ -62,8 +60,6 @@ func CallBackData(callBack tgbotapi.Update) error {
 
 func pass(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery, adminPass bool) error {
 	bot.Snowbreak.RestrictChatMember(chatId, userId, tgbotapi.AllPermissions)
-	val := fmt.Sprintf("verify%d%d", chatId, userId)
-	utils.RedisDelSetItem("verify", val)
 	callbackQuery.Delete()
 	return nil
 }
@@ -71,8 +67,6 @@ func pass(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery, adm
 func ban(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery, joinMessageId int) {
 	bot.Snowbreak.BanChatMember(chatId, userId)
 	callbackQuery.Delete()
-	val := fmt.Sprintf("verify%d%d", chatId, userId)
-	utils.RedisDelSetItem("verify", val)
 	delJoinMessage := tgbotapi.NewDeleteMessage(chatId, joinMessageId)
 	bot.Snowbreak.Send(delJoinMessage)
 }

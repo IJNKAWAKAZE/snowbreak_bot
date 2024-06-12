@@ -5,11 +5,20 @@ bot:
   token:
   # 拥有者userId
   owner:
+  # 群组id
+  group_id :
   # 消息删除延迟
   msg_del_delay: 10
 
 sticker:
   ping: CAACAgUAAxkBAAPBZYTpA2TK3cnNG1CfXiLG_9Yo7t8AAiYEAAML4FddSAYCSfeu2jME
+
+api:
+  user_agent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36 EdgA/118.0.2088.66
+  wiki: https://wiki.biligame.com/sonw/
+  bilibili_buvid: https://api.bilibili.com/x/frontend/finger/spi
+  bilibili_register_buvid: https://api.bilibili.com/x/internal/gaia-gateway/ExClimbWuzhi
+  bilibili_dynamic: https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?offset=&host_mid=1409863611&timezone_offset=-480&features=itemOpusStyle,listOnly
 
 redis:
   addr: localhost:6379
