@@ -30,6 +30,7 @@ func BilibiliNews() {
 	if len(text) == 0 {
 		return
 	}
+	text += "\n#游戏公告"
 	if pics == nil {
 		sendMessage := tgbotapi.NewMessage(group, text)
 		config.Snowbreak.Send(sendMessage)
