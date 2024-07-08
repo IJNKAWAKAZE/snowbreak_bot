@@ -6,8 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.9.2
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/ijnkawakaze/telegram-bot-api v1.0.6
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/ijnkawakaze/telegram-bot-api v1.0.9
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.18.2
 	github.com/starudream/go-lib/core/v2 v2.0.23
