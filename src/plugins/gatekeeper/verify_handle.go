@@ -95,9 +95,6 @@ func VerifyMember(message *tgbotapi.Message) {
 
 func unban(chatId, userId int64) {
 	time.Sleep(time.Minute)
-	if bot.Snowbreak.GetChatMemberStatus(chatId, userId) != tgbotapi.KICKED {
-		bot.Snowbreak.UnbanChatMember(chatId, userId)
-	}
 	bot.Snowbreak.UnbanChatMember(chatId, userId)
 }
 
@@ -117,7 +114,5 @@ func verify(chatId int64, userId int64, messageId int, joinMessageId int) {
 	bot.Snowbreak.Send(delMsg)
 	time.Sleep(time.Minute)
 	// 解除用户封禁
-	if bot.Snowbreak.GetChatMemberStatus(chatId, userId) != tgbotapi.KICKED {
-		bot.Snowbreak.UnbanChatMember(chatId, userId)
-	}
+	bot.Snowbreak.UnbanChatMember(chatId, userId)
 }
