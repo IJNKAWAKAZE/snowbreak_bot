@@ -3,6 +3,9 @@ package utils
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
+	gonanoid "github.com/matoous/go-nanoid/v2"
+	"gorm.io/gorm"
 	"io"
 	"log"
 	"net/http"
@@ -11,6 +14,70 @@ import (
 )
 
 var ctx = context.Background()
+
+type GroupInvite struct {
+	Id           string    `json:"id" gorm:"primaryKey"`
+	GroupName    string    `json:"groupName"`
+	GroupNumber  int64     `json:"groupNumber"`
+	UserName     string    `json:"userName"`
+	UserNumber   int64     `json:"userNumber"`
+	MemberName   string    `json:"memberName"`
+	MemberNumber int64     `json:"memberNumber"`
+	CreateTime   time.Time `json:"createTime" gorm:"autoCreateTime"`
+	UpdateTime   time.Time `json:"updateTime" gorm:"autoUpdateTime"`
+	Remark       string    `json:"remark"`
+}
+
+type GroupJoined struct {
+	Id          string    `json:"id" gorm:"primaryKey"`
+	GroupName   string    `json:"groupName"`
+	GroupNumber int64     `json:"groupNumber"`
+	News        int64     `json:"news"`
+	CreateTime  time.Time `json:"createTime" gorm:"autoCreateTime"`
+	UpdateTime  time.Time `json:"updateTime" gorm:"autoUpdateTime"`
+	Remark      string    `json:"remark"`
+}
+
+// SaveInvite 保存邀请记录
+func SaveInvite(message *tgbotapi.Message, member *tgbotapi.User) {
+	id, _ := gonanoid.New(32)
+	groupInvite := GroupInvite{
+		Id:           id,
+		GroupName:    message.Chat.Title,
+		GroupNumber:  message.Chat.ID,
+		UserName:     message.From.FullName(),
+		UserNumber:   message.From.ID,
+		MemberName:   member.FullName(),
+		MemberNumber: member.ID,
+	}
+
+	bot.DBEngine.Table("group_invite").Create(&groupInvite)
+}
+
+// SaveJoined 保存入群记录
+func SaveJoined(message *tgbotapi.Message) {
+	id, _ := gonanoid.New(32)
+	groupJoined := GroupJoined{
+		Id:          id,
+		GroupName:   message.Chat.Title,
+		GroupNumber: message.Chat.ID,
+		News:        0,
+	}
+
+	bot.DBEngine.Table("group_joined").Create(&groupJoined)
+}
+
+// GetJoinedGroups 获取加入的群组
+func GetJoinedGroups() []int64 {
+	var groups []int64
+	bot.DBEngine.Raw("select group_number from group_joined where news = 1 group by group_number").Scan(&groups)
+	return groups
+}
+
+// GetJoinedByChatId 查询入群记录
+func GetJoinedByChatId(chatId int64) *gorm.DB {
+	return bot.DBEngine.Raw("select * from group_joined where group_number = ? limit 1", chatId)
+}
 
 func GetImg(url string) []byte {
 	resp, err := http.Get(url)

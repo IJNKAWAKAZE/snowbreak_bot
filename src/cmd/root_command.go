@@ -8,9 +8,14 @@ import (
 
 func Execute() {
 	//初始化数据库连接
+	err := config.DB()
+	if err != nil {
+		panic(err)
+	}
+	//初始化redis连接
 	config.Redis()
 	//初始化机器人
-	err := config.Bot()
+	err = config.Bot()
 	if err != nil {
 		panic(err)
 	}

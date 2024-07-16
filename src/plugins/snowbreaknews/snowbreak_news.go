@@ -25,63 +25,72 @@ type Pic struct {
 }
 
 func BilibiliNews() {
-	group := viper.GetInt64("bot.group_id")
+	groups := utils.GetJoinedGroups()
 	text, pics := ParseBilibiliDynamic()
 	if len(text) == 0 {
 		return
 	}
 	text += "\n#游戏公告"
 	if pics == nil {
-		sendMessage := tgbotapi.NewMessage(group, text)
-		config.Snowbreak.Send(sendMessage)
+		for _, group := range groups {
+			sendMessage := tgbotapi.NewMessage(group, text)
+			config.Snowbreak.Send(sendMessage)
+		}
 		return
 	}
 
 	if len(pics) == 1 {
 		if pics[0].Height > pics[0].Width*2 {
-			sendDocument := tgbotapi.NewDocument(group, tgbotapi.FileURL(pics[0].Url))
-			sendDocument.Caption = text
-			config.Snowbreak.Send(sendDocument)
+			for _, group := range groups {
+				sendDocument := tgbotapi.NewDocument(group, tgbotapi.FileURL(pics[0].Url))
+				sendDocument.Caption = text
+				config.Snowbreak.Send(sendDocument)
+			}
 		} else {
-			sendPhoto := tgbotapi.NewPhoto(group, tgbotapi.FileURL(pics[0].Url))
-			sendPhoto.Caption = text
-			config.Snowbreak.Send(sendPhoto)
+			for _, group := range groups {
+				sendPhoto := tgbotapi.NewPhoto(group, tgbotapi.FileURL(pics[0].Url))
+				sendPhoto.Caption = text
+				config.Snowbreak.Send(sendPhoto)
+			}
 		}
 		return
 	}
 
-	var mediaGroup tgbotapi.MediaGroupConfig
-	var media []interface{}
-	mediaGroup.ChatID = group
+	for _, group := range groups {
+		var mediaGroup tgbotapi.MediaGroupConfig
+		var media []interface{}
+		mediaGroup.ChatID = group
 
-	d := false
-	for _, p := range pics {
-		if p.Height > p.Width*2 {
-			d = true
+		d := false
+		for _, p := range pics {
+			if p.Height > p.Width*2 {
+				d = true
+			}
 		}
+
+		for i, pic := range pics {
+			if d {
+				var inputDocument tgbotapi.InputMediaDocument
+				inputDocument.Media = tgbotapi.FileBytes{Bytes: utils.GetImg(pic.Url), Name: pic.Url}
+				inputDocument.Type = "document"
+				if i == len(pics)-1 {
+					inputDocument.Caption = text
+				}
+				media = append(media, inputDocument)
+			} else {
+				var inputPhoto tgbotapi.InputMediaPhoto
+				inputPhoto.Media = tgbotapi.FileBytes{Bytes: utils.GetImg(pic.Url)}
+				inputPhoto.Type = "photo"
+				if i == 0 {
+					inputPhoto.Caption = text
+				}
+				media = append(media, inputPhoto)
+			}
+		}
+		mediaGroup.Media = media
+		config.Snowbreak.SendMediaGroup(mediaGroup)
 	}
 
-	for i, pic := range pics {
-		if d {
-			var inputDocument tgbotapi.InputMediaDocument
-			inputDocument.Media = tgbotapi.FileBytes{Bytes: utils.GetImg(pic.Url), Name: pic.Url}
-			inputDocument.Type = "document"
-			if i == len(pics)-1 {
-				inputDocument.Caption = text
-			}
-			media = append(media, inputDocument)
-		} else {
-			var inputPhoto tgbotapi.InputMediaPhoto
-			inputPhoto.Media = tgbotapi.FileBytes{Bytes: utils.GetImg(pic.Url)}
-			inputPhoto.Type = "photo"
-			if i == 0 {
-				inputPhoto.Caption = text
-			}
-			media = append(media, inputPhoto)
-		}
-	}
-	mediaGroup.Media = media
-	config.Snowbreak.SendMediaGroup(mediaGroup)
 }
 
 func ParseBilibiliDynamic() (string, []Pic) {
