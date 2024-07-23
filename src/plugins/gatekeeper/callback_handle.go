@@ -1,8 +1,11 @@
 package gatekeeper
 
 import (
+	"fmt"
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	bot "snowbreak_bot/config"
+	"snowbreak_bot/plugins/messagecleaner"
+	"snowbreak_bot/utils"
 	"strconv"
 	"strings"
 )
@@ -61,6 +64,23 @@ func CallBackData(callBack tgbotapi.Update) error {
 func pass(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery, adminPass bool) error {
 	bot.Snowbreak.RestrictChatMember(chatId, userId, tgbotapi.AllPermissions)
 	callbackQuery.Delete()
+	if !adminPass {
+		// 新人发送box提醒
+		text := fmt.Sprintf("欢迎[%s](tg://user?id=%d)\n", tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, callbackQuery.From.FullName()), callbackQuery.From.ID)
+		var joined utils.GroupJoined
+		utils.GetJoinedByChatId(chatId).Scan(&joined)
+		if joined.Reg != -1 {
+			text += fmt.Sprintf("建议阅读群公约：[点击阅读](https://t.me/%s/%d)", callbackQuery.Message.Chat.UserName, joined.Reg)
+		}
+		sendMessage := tgbotapi.NewMessage(chatId, text)
+		sendMessage.ParseMode = tgbotapi.ModeMarkdownV2
+		msg, err := bot.Snowbreak.Send(sendMessage)
+		if err != nil {
+			return err
+		}
+		messagecleaner.AddDelQueue(chatId, msg.MessageID, 3600)
+
+	}
 	return nil
 }
 
