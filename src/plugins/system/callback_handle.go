@@ -22,7 +22,7 @@ func Report(callBack tgbotapi.Update) error {
 	target, _ := strconv.ParseInt(d[2], 10, 64)
 	targetMessageId, _ := strconv.Atoi(d[3])
 
-	if !bot.Snowbreak.IsAdmin(chatId, userId) {
+	if !bot.Snowbreak.IsAdminWithPermissions(chatId, userId, tgbotapi.AdminCanRestrictMembers) {
 		callbackQuery.Answer(true, "无使用权限！")
 		return nil
 	}

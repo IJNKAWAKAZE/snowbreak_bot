@@ -13,7 +13,7 @@ sticker:
 
 api:
   user_agent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36 EdgA/118.0.2088.66
-  wiki: https://wiki.biligame.com/sonw/
+  wiki: https://www.gamekee.com
   bilibili_buvid: https://api.bilibili.com/x/frontend/finger/spi
   bilibili_register_buvid: https://api.bilibili.com/x/internal/gaia-gateway/ExClimbWuzhi
   bilibili_dynamic: https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?offset=&host_mid=1409863611&timezone_offset=-480&features=itemOpusStyle,listOnly

@@ -11,7 +11,7 @@ func StartCron() error {
 	crontab := cron.New(cron.WithSeconds())
 
 	//尘白禁区bilibili动态 0/30 * * * * ?
-	_, err := crontab.AddFunc("0/30 * * * * ?", snowbreaknews.BilibiliNews)
+	_, err := crontab.AddFunc("0 0/6 * * * ?", snowbreaknews.BilibiliNews)
 	if err != nil {
 		return err
 	}
