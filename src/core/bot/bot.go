@@ -4,6 +4,7 @@ import (
 	"log"
 	bot "snowbreak_bot/config"
 	"snowbreak_bot/plugins/gatekeeper"
+	"snowbreak_bot/plugins/strategy"
 	"snowbreak_bot/plugins/system"
 )
 
@@ -18,9 +19,13 @@ func Serve() {
 	b.NewCallBackProcessor("verify", gatekeeper.CallBackData)
 	b.NewCallBackProcessor("report", system.Report)
 
+	// InlineQuery
+	b.NewInlineQueryProcessor("攻略", strategy.InlineStrategy)
+
 	// 普通
 	b.NewCommandProcessor("ping", system.PingHandle)
 	b.NewCommandProcessor("report", system.ReportHandle)
+	b.NewCommandProcessor("strategy", strategy.StrategyHandle)
 
 	// 权限
 	b.NewCommandProcessor("update", system.UpdateHandle)

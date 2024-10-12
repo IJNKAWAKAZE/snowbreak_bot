@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"os"
+	"strings"
 )
 
 type Character struct {
@@ -29,4 +30,30 @@ func GetLocalCharacters() []Character {
 		characters = append(characters, char)
 	}
 	return characters
+}
+
+func GetCharacter(name string) Character {
+	var char Character
+	path := "./assets/strategy"
+	d, _ := os.Open(path)
+	fs, _ := d.Readdir(-1)
+	for _, f := range fs {
+		n := f.Name()[:len(f.Name())-4]
+		if n == name {
+			char.Name = name
+			char.ThumbURL = path + "/" + f.Name()
+			break
+		}
+	}
+	return char
+}
+
+func GetCharactersByName(name string) []Character {
+	var characterList []Character
+	for _, char := range GetLocalCharacters() {
+		if strings.Contains(char.Name, name) {
+			characterList = append(characterList, char)
+		}
+	}
+	return characterList
 }
