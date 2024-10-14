@@ -1,18 +1,24 @@
 package bot
 
 import (
+	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	"log"
 	bot "snowbreak_bot/config"
 	"snowbreak_bot/plugins/gatekeeper"
 	"snowbreak_bot/plugins/strategy"
 	"snowbreak_bot/plugins/system"
+	"snowbreak_bot/plugins/weapon"
 )
 
 // Serve TG机器人阻塞监听
 func Serve() {
 	log.Println("机器人启动成功")
 	b := bot.Snowbreak.AddHandle()
-	b.NewMemberProcessor(gatekeeper.NewMemberHandle)
+	b.NewProcessor(func(update tgbotapi.Update) bool {
+		member := update.ChatMember
+		return member != nil && member.OldChatMember.Status == "left" && member.NewChatMember.Status == "member"
+	}, gatekeeper.NewMemberHandle)
+	b.NewMemberProcessor(gatekeeper.JoinedMsgHandle)
 	b.LeftMemberProcessor(gatekeeper.LeftMemberHandle)
 
 	// callback
@@ -21,11 +27,13 @@ func Serve() {
 
 	// InlineQuery
 	b.NewInlineQueryProcessor("攻略", strategy.InlineStrategy)
+	b.NewInlineQueryProcessor("武器", weapon.InlineWeapon)
 
 	// 普通
 	b.NewCommandProcessor("ping", system.PingHandle)
 	b.NewCommandProcessor("report", system.ReportHandle)
 	b.NewCommandProcessor("strategy", strategy.StrategyHandle)
+	b.NewCommandProcessor("weapon", weapon.WeaponHandle)
 
 	// 权限
 	b.NewCommandProcessor("update", system.UpdateHandle)

@@ -5,6 +5,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	gonanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/playwright-community/playwright-go"
 	"gorm.io/gorm"
 	"io"
 	"log"
@@ -40,7 +41,7 @@ type GroupJoined struct {
 }
 
 // SaveInvite 保存邀请记录
-func SaveInvite(message *tgbotapi.Message, member *tgbotapi.User) {
+func SaveInvite(message *tgbotapi.ChatMemberUpdated, member *tgbotapi.User) {
 	id, _ := gonanoid.New(32)
 	groupInvite := GroupInvite{
 		Id:           id,
@@ -56,7 +57,7 @@ func SaveInvite(message *tgbotapi.Message, member *tgbotapi.User) {
 }
 
 // SaveJoined 保存入群记录
-func SaveJoined(message *tgbotapi.Message) {
+func SaveJoined(message *tgbotapi.ChatMemberUpdated) {
 	id, _ := gonanoid.New(32)
 	groupJoined := GroupJoined{
 		Id:          id,
@@ -185,4 +186,43 @@ func RedisDelSetItem(key string, val string) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func Screenshot(url string) []byte {
+	pw, err := playwright.Run()
+	if err != nil {
+		log.Println("未检测到playwright，开始自动安装...")
+		playwright.Install()
+		pw, _ = playwright.Run()
+	}
+	browser, err := pw.Chromium.Launch()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	page, _ := browser.NewPage()
+	defer func() {
+		log.Println("关闭playwright")
+		page.Close()
+		browser.Close()
+		pw.Stop()
+	}()
+	log.Println("开始进行截图...")
+	page.Goto(url, playwright.PageGotoOptions{
+		WaitUntil: playwright.WaitUntilStateNetworkidle,
+	})
+	page.Click(".primary-btn")
+	page.WaitForTimeout(1000)
+	page.EvalOnSelector("header", "el => el.style.display = 'none'")
+	locator, _ := page.Locator(".module-container")
+	if v, _ := locator.IsVisible(); !v {
+		log.Println("元素未加载取消截图操作")
+		return nil
+	}
+	screenshot, err := locator.Screenshot(playwright.LocatorScreenshotOptions{Type: playwright.ScreenshotTypeJpeg})
+	if err != nil {
+		return nil
+	}
+	log.Println("截图完成...")
+	return screenshot
 }

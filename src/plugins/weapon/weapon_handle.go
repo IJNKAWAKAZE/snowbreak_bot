@@ -1,15 +1,16 @@
-package strategy
+package weapon
 
 import (
+	"fmt"
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	bot "snowbreak_bot/config"
 	"snowbreak_bot/plugins/messagecleaner"
 	"snowbreak_bot/utils"
 )
 
-// StrategyHandle 角色攻略
-func StrategyHandle(update tgbotapi.Update) error {
-	text := "攻略-"
+// WeaponHandle 武器
+func WeaponHandle(update tgbotapi.Update) error {
+	text := "武器-"
 	chatId := update.Message.Chat.ID
 	messageId := update.Message.MessageID
 	name := update.Message.CommandArguments()
@@ -18,12 +19,12 @@ func StrategyHandle(update tgbotapi.Update) error {
 		inlineKeyboardMarkup := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.InlineKeyboardButton{
-					Text:                         "选择角色",
+					Text:                         "选择武器",
 					SwitchInlineQueryCurrentChat: &text,
 				},
 			),
 		)
-		sendMessage := tgbotapi.NewMessage(chatId, "请选择要查询的角色")
+		sendMessage := tgbotapi.NewMessage(chatId, "请选择要查询的武器")
 		sendMessage.ReplyMarkup = inlineKeyboardMarkup
 		msg, err := bot.Snowbreak.Send(sendMessage)
 		if err != nil {
@@ -32,9 +33,9 @@ func StrategyHandle(update tgbotapi.Update) error {
 		messagecleaner.AddDelQueue(msg.Chat.ID, msg.MessageID, bot.MsgDelDelay)
 		return nil
 	}
-	character := utils.GetCharacterByName(name)
-	if character.Name == "" {
-		sendMessage := tgbotapi.NewMessage(update.Message.Chat.ID, "查无此人，请输入正确的角色名称。")
+	weapon := utils.GetWeaponByName(name)
+	if weapon.Name == "" {
+		sendMessage := tgbotapi.NewMessage(update.Message.Chat.ID, "请输入正确的武器名称。")
 		sendMessage.ReplyToMessageID = messageId
 		msg, err := bot.Snowbreak.Send(sendMessage)
 		messagecleaner.AddDelQueue(chatId, messageId, bot.MsgDelDelay)
@@ -48,7 +49,11 @@ func StrategyHandle(update tgbotapi.Update) error {
 	sendAction := tgbotapi.NewChatAction(chatId, "upload_photo")
 	bot.Snowbreak.Send(sendAction)
 
-	sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FilePath(character.ThumbURL))
+	pic := utils.Screenshot(weapon.Url)
+	if pic == nil {
+		return fmt.Errorf("截图失败")
+	}
+	sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FileBytes{Bytes: pic})
 	sendPhoto.ReplyToMessageID = messageId
 	bot.Snowbreak.Send(sendPhoto)
 	return nil

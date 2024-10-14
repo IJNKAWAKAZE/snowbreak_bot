@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-func VerifyMember(message *tgbotapi.Message) {
-	chatId := message.Chat.ID
-	userId := message.From.ID
-	name := message.From.FullName()
-	messageId := message.MessageID
+func VerifyMember(message tgbotapi.Update) {
+	chatMember := message.ChatMember
+	chatId := chatMember.Chat.ID
+	userId := chatMember.From.ID
+	name := chatMember.From.FullName()
 	// 限制用户发送消息
 	_, err := bot.Snowbreak.RestrictChatMember(chatId, userId, tgbotapi.NoMessagesPermission)
 	if err != nil {
@@ -56,12 +56,12 @@ func VerifyMember(message *tgbotapi.Message) {
 	var buttons [][]tgbotapi.InlineKeyboardButton
 	for i := 0; i < len(options); i++ {
 		buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(options[i].Name, fmt.Sprintf("verify,%d,%s,%d", userId, options[i].Name, messageId)),
+			tgbotapi.NewInlineKeyboardButtonData(options[i].Name, fmt.Sprintf("verify,%d,%s", userId, options[i].Name)),
 		))
 	}
 	buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("✅放行", fmt.Sprintf("verify,%d,PASS,%d", userId, messageId)),
-		tgbotapi.NewInlineKeyboardButtonData("🚫封禁", fmt.Sprintf("verify,%d,BAN,%d", userId, messageId)),
+		tgbotapi.NewInlineKeyboardButtonData("✅放行", fmt.Sprintf("verify,%d,PASS", userId)),
+		tgbotapi.NewInlineKeyboardButtonData("🚫封禁", fmt.Sprintf("verify,%d,BAN", userId)),
 	))
 	inlineKeyboardMarkup := tgbotapi.NewInlineKeyboardMarkup(
 		buttons...,
@@ -90,7 +90,7 @@ func VerifyMember(message *tgbotapi.Message) {
 		return
 	}
 	verifySet.add(userId, chatId, correct.Name)
-	go verify(chatId, userId, photo.MessageID, messageId)
+	go verify(chatId, userId, photo.MessageID)
 }
 
 func unban(chatId, userId int64) {
@@ -98,7 +98,7 @@ func unban(chatId, userId int64) {
 	bot.Snowbreak.UnbanChatMember(chatId, userId)
 }
 
-func verify(chatId int64, userId int64, messageId int, joinMessageId int) {
+func verify(chatId int64, userId int64, messageId int) {
 	time.Sleep(time.Minute)
 	if has, _ := verifySet.checkExistAndRemove(userId, chatId); !has {
 		return
@@ -106,9 +106,6 @@ func verify(chatId int64, userId int64, messageId int, joinMessageId int) {
 
 	// 踢出超时未验证用户
 	bot.Snowbreak.BanChatMember(chatId, userId)
-	// 删除用户入群提醒
-	delJoinMessage := tgbotapi.NewDeleteMessage(chatId, joinMessageId)
-	bot.Snowbreak.Send(delJoinMessage)
 	// 删除入群验证消息
 	delMsg := tgbotapi.NewDeleteMessage(chatId, messageId)
 	bot.Snowbreak.Send(delMsg)

@@ -1,4 +1,4 @@
-package strategy
+package weapon
 
 import (
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
@@ -8,20 +8,20 @@ import (
 	"strings"
 )
 
-func InlineStrategy(update tgbotapi.Update) error {
-	_, name, _ := strings.Cut(update.InlineQuery.Query, "攻略-")
-	characterList := utils.GetCharactersByName(name)
+func InlineWeapon(update tgbotapi.Update) error {
+	_, name, _ := strings.Cut(update.InlineQuery.Query, "武器-")
+	weaponList := utils.GetWeaponsByName(name)
 	var inlineQueryResults []interface{}
-	for _, character := range characterList {
+	for _, weapon := range weaponList {
 		id, _ := gonanoid.New(32)
 		queryResult := tgbotapi.InlineQueryResultArticle{
 			ID:          id,
 			Type:        "article",
-			Title:       character.Name,
-			Description: "查询" + character.Name,
-			ThumbURL:    character.ThumbURL,
+			Title:       weapon.Name,
+			Description: "查询" + weapon.Name,
+			ThumbURL:    weapon.ThumbURL,
 			InputMessageContent: tgbotapi.InputTextMessageContent{
-				Text: "/strategy " + character.Name,
+				Text: "/weapon " + weapon.Name,
 			},
 		}
 		inlineQueryResults = append(inlineQueryResults, queryResult)
