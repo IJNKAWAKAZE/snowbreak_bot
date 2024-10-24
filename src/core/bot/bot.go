@@ -8,6 +8,7 @@ import (
 	"snowbreak_bot/plugins/strategy"
 	"snowbreak_bot/plugins/system"
 	"snowbreak_bot/plugins/weapon"
+	"time"
 )
 
 // Serve TG机器人阻塞监听
@@ -16,6 +17,9 @@ func Serve() {
 	b := bot.Snowbreak.AddHandle()
 	b.NewProcessor(func(update tgbotapi.Update) bool {
 		member := update.ChatMember
+		if member != nil && int64(member.Date) < time.Now().Unix() {
+			return false
+		}
 		return member != nil && member.OldChatMember.Status == "left" && member.NewChatMember.Status == "member"
 	}, gatekeeper.NewMemberHandle)
 	b.NewMemberProcessor(gatekeeper.JoinedMsgHandle)
