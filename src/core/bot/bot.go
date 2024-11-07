@@ -11,13 +11,15 @@ import (
 	"time"
 )
 
+var now = time.Now().Unix()
+
 // Serve TG机器人阻塞监听
 func Serve() {
 	log.Println("机器人启动成功")
 	b := bot.Snowbreak.AddHandle()
 	b.NewProcessor(func(update tgbotapi.Update) bool {
 		member := update.ChatMember
-		if member != nil && int64(member.Date) < time.Now().Unix() {
+		if member != nil && int64(member.Date) < now {
 			return false
 		}
 		return member != nil && member.OldChatMember.Status == "left" && member.NewChatMember.Status == "member"

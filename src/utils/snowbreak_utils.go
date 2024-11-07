@@ -32,20 +32,21 @@ func GetLocalCharacters() []Character {
 	return characters
 }
 
-func GetCharacterByName(name string) Character {
-	var char Character
+func GetCharacterListByName(name string) []Character {
+	var chars []Character
 	path := "./assets/strategy"
 	d, _ := os.Open(path)
 	fs, _ := d.Readdir(-1)
 	for _, f := range fs {
 		n := f.Name()[:len(f.Name())-4]
 		if strings.Contains(n, name) {
+			var char Character
 			char.Name = name
 			char.ThumbURL = path + "/" + f.Name()
-			break
+			chars = append(chars, char)
 		}
 	}
-	return char
+	return chars
 }
 
 func GetCharactersByName(name string) []Character {

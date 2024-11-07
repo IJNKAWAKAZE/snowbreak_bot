@@ -7,6 +7,7 @@ import (
 )
 
 var MsgDelDelay float64
+var ADWords []string
 
 func init() {
 	// 设置配置文件的名字
@@ -31,4 +32,5 @@ func init() {
 
 func initData() {
 	MsgDelDelay = viper.GetFloat64("bot.msg_del_delay")
+	ADWords = viper.GetStringSlice("ad")
 }

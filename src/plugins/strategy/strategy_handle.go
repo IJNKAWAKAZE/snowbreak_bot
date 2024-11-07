@@ -32,8 +32,8 @@ func StrategyHandle(update tgbotapi.Update) error {
 		messagecleaner.AddDelQueue(msg.Chat.ID, msg.MessageID, bot.MsgDelDelay)
 		return nil
 	}
-	character := utils.GetCharacterByName(name)
-	if character.Name == "" {
+	characters := utils.GetCharacterListByName(name)
+	if len(characters) == 0 {
 		sendMessage := tgbotapi.NewMessage(update.Message.Chat.ID, "查无此人，请输入正确的角色名称。")
 		sendMessage.ReplyToMessageID = messageId
 		msg, err := bot.Snowbreak.Send(sendMessage)
@@ -48,8 +48,10 @@ func StrategyHandle(update tgbotapi.Update) error {
 	sendAction := tgbotapi.NewChatAction(chatId, "upload_photo")
 	bot.Snowbreak.Send(sendAction)
 
-	sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FilePath(character.ThumbURL))
-	sendPhoto.ReplyToMessageID = messageId
-	bot.Snowbreak.Send(sendPhoto)
+	for _, character := range characters {
+		sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FilePath(character.ThumbURL))
+		sendPhoto.ReplyToMessageID = messageId
+		bot.Snowbreak.Send(sendPhoto)
+	}
 	return nil
 }
