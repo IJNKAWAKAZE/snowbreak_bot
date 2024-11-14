@@ -41,13 +41,13 @@ func GetCharacterListByName(name string) []Character {
 		n := f.Name()[:len(f.Name())-4]
 		if strings.Contains(n, name) {
 			var char Character
-			char.Name = name
+			char.Name = f.Name()
 			char.ThumbURL = path + "/" + f.Name()
 			chars = append(chars, char)
 		}
 	}
 	sort.Slice(chars, func(i, j int) bool {
-		return chars[i].Name > chars[j].Name
+		return chars[i].Name < chars[j].Name
 	})
 	return chars
 }
