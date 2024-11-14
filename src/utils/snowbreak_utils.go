@@ -46,6 +46,9 @@ func GetCharacterListByName(name string) []Character {
 			chars = append(chars, char)
 		}
 	}
+	sort.Slice(chars, func(i, j int) bool {
+		return chars[i].Name > chars[j].Name
+	})
 	return chars
 }
 
