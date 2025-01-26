@@ -4,6 +4,7 @@ import (
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	"log"
 	bot "snowbreak_bot/config"
+	"snowbreak_bot/plugins/autoreply"
 	"snowbreak_bot/plugins/gatekeeper"
 	"snowbreak_bot/plugins/strategy"
 	"snowbreak_bot/plugins/system"
@@ -23,6 +24,7 @@ func Serve() {
 		}
 		return member != nil && member.OldChatMember.Status == "left" && member.NewChatMember.Status == "member"
 	}, gatekeeper.NewMemberHandle)
+	b.NewProcessor(autoreply.CheckTrigger, autoreply.AutoReply)
 	b.NewMemberProcessor(gatekeeper.JoinedMsgHandle)
 	b.LeftMemberProcessor(gatekeeper.LeftMemberHandle)
 
@@ -43,6 +45,7 @@ func Serve() {
 	// 权限
 	b.NewCommandProcessor("update", system.UpdateHandle)
 	b.NewCommandProcessor("news", system.NewsHandle)
+	b.NewCommandProcessor("autoreply", autoreply.AutoReplyHandle)
 	b.NewCommandProcessor("reg", system.RegulationHandle)
 	b.NewCommandProcessor("clear", system.ClearHandle)
 	b.NewCommandProcessor("kill", system.KillHandle)

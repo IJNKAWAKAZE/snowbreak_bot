@@ -34,6 +34,8 @@ type GroupJoined struct {
 	GroupName   string    `json:"groupName"`
 	GroupNumber int64     `json:"groupNumber"`
 	News        int64     `json:"news"`
+	AutoReply   int64     `json:"autoReply"`
+	ReplyConfig string    `json:"replyConfig"`
 	Reg         int       `json:"reg"`
 	CreateTime  time.Time `json:"createTime" gorm:"autoCreateTime"`
 	UpdateTime  time.Time `json:"updateTime" gorm:"autoUpdateTime"`
@@ -64,6 +66,7 @@ func SaveJoined(message *tgbotapi.ChatMemberUpdated) {
 		GroupName:   message.Chat.Title,
 		GroupNumber: message.Chat.ID,
 		News:        0,
+		AutoReply:   0,
 		Reg:         -1,
 	}
 
@@ -74,6 +77,13 @@ func SaveJoined(message *tgbotapi.ChatMemberUpdated) {
 func GetJoinedGroups() []int64 {
 	var groups []int64
 	bot.DBEngine.Raw("select group_number from group_joined where news = 1 group by group_number").Scan(&groups)
+	return groups
+}
+
+// GetAutoReplyGroups 获取开启自动回复的群组
+func GetAutoReplyGroups() []GroupJoined {
+	var groups []GroupJoined
+	bot.DBEngine.Raw("select * from group_joined where auto_reply = 1 group by group_number").Scan(&groups)
 	return groups
 }
 
