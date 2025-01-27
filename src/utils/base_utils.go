@@ -83,7 +83,7 @@ func GetJoinedGroups() []int64 {
 // GetAutoReplyGroups 获取开启自动回复的群组
 func GetAutoReplyGroups() []GroupJoined {
 	var groups []GroupJoined
-	bot.DBEngine.Raw("select * from group_joined where auto_reply = 1 group by group_number").Scan(&groups)
+	bot.DBEngine.Raw("select * from group_joined where auto_reply = 1").Scan(&groups)
 	return groups
 }
 

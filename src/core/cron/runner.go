@@ -30,7 +30,7 @@ func StartCron() error {
 		return err
 	}
 
-	// 更新关键词 0 0/10 * * * ?
+	//更新关键词 0 0/10 * * * ?
 	_, err = crontab.AddFunc("0 0/10 * * * ?", autoreply.UpdateTrigger)
 	if err != nil {
 		return err

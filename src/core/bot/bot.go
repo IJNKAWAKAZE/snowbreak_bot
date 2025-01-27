@@ -25,6 +25,18 @@ func Serve() {
 		return member != nil && member.OldChatMember.Status == "left" && member.NewChatMember.Status == "member"
 	}, gatekeeper.NewMemberHandle)
 	b.NewProcessor(autoreply.CheckTrigger, autoreply.AutoReply)
+	b.NewProcessor(func(update tgbotapi.Update) bool {
+		if update.Message != nil && update.Message.Chat.IsPrivate() && len(update.Message.Photo) > 0 {
+			return true
+		}
+		return false
+	}, system.FileIDHandle)
+	b.NewProcessor(func(update tgbotapi.Update) bool {
+		if update.Message != nil && update.Message.Chat.IsPrivate() && update.Message.Sticker != nil {
+			return true
+		}
+		return false
+	}, system.FileIDHandle)
 	b.NewMemberProcessor(gatekeeper.JoinedMsgHandle)
 	b.LeftMemberProcessor(gatekeeper.LeftMemberHandle)
 

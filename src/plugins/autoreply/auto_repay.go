@@ -6,7 +6,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	bot "snowbreak_bot/config"
 	"snowbreak_bot/utils"
+	"strings"
 )
 
 var TriggerMap = make(map[int64]map[string]AutoReplyConfig)
@@ -35,7 +37,10 @@ func UpdateTrigger() {
 				return
 			}
 			for _, config := range replyConfigs {
-				triggerMap[config.Trigger] = config
+				triggers := strings.Split(config.Trigger, "|")
+				for _, trigger := range triggers {
+					triggerMap[trigger] = config
+				}
 			}
 			TriggerMap[group.GroupNumber] = triggerMap
 			defer resp.Body.Close()
@@ -62,11 +67,21 @@ func AutoReply(update tgbotapi.Update) error {
 	config := TriggerMap[chatId][trigger]
 	replyType := config.ReplyType
 	if replyType == "text" {
-
+		sendMessage := tgbotapi.NewMessage(chatId, config.Reply)
+		sendMessage.ParseMode = tgbotapi.ModeMarkdownV2
+		sendMessage.ReplyToMessageID = messageId
+		bot.Snowbreak.Send(sendMessage)
 	} else if replyType == "photo" {
-
+		sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(config.Reply))
+		if strings.Contains(config.Reply, "http") {
+			sendPhoto = tgbotapi.NewPhoto(chatId, tgbotapi.FileBytes{Bytes: utils.GetImg(config.Reply)})
+		}
+		sendPhoto.ReplyToMessageID = messageId
+		bot.Snowbreak.Send(sendPhoto)
 	} else if replyType == "sticker" {
-
+		sendSticker := tgbotapi.NewSticker(chatId, tgbotapi.FileID(config.Reply))
+		sendSticker.ReplyToMessageID = messageId
+		bot.Snowbreak.Send(sendSticker)
 	}
 	return nil
 }
