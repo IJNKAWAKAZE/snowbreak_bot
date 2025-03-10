@@ -1,9 +1,7 @@
 package datasource
 
 import (
-	"bytes"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/playwright-community/playwright-go"
 	"github.com/spf13/viper"
 	"github.com/starudream/go-lib/core/v2/codec/json"
 	"log"
@@ -24,11 +22,18 @@ func UpdateDataSourceRunner() {
 	log.Println("开始更新数据源...")
 	var characterList []utils.Character
 	api := viper.GetString("api.wiki")
-	response, err := http.Get(api + "/snow")
+	req, err := http.NewRequest("GET", api+"/snow", nil)
 	if err != nil {
+		log.Println(err)
 		return
 	}
-	doc, err := goquery.NewDocumentFromReader(response.Body)
+	req.Header.Add("User-Agent", viper.GetString("api.user_agent"))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		return
 	}
@@ -47,7 +52,7 @@ func UpdateDataSourceRunner() {
 	utils.RedisSet("characterList", json.MustMarshalString(characterList), 0)
 
 	// 武器
-	var weaponList []utils.Weapon
+	/*var weaponList []utils.Weapon
 	pw, err := playwright.Run()
 	if err != nil {
 		log.Println("未检测到playwright，开始自动安装...")
@@ -92,7 +97,7 @@ func UpdateDataSourceRunner() {
 		}
 	})
 
-	utils.RedisSet("weaponList", json.MustMarshalString(weaponList), 0)
+	utils.RedisSet("weaponList", json.MustMarshalString(weaponList), 0)*/
 
 	log.Println("数据源更新完毕")
 }

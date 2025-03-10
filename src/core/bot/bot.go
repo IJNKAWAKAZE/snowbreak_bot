@@ -53,8 +53,6 @@ func Serve() {
 	b.NewCommandProcessor("report", system.ReportHandle)
 	b.NewCommandProcessor("strategy", strategy.StrategyHandle)
 	//b.NewCommandProcessor("weapon", weapon.WeaponHandle)
-	b.NewCommandProcessor("ask", system.AskHandle)
-	b.NewCommandProcessor("stop", system.StopHandle)
 	// 权限
 	b.NewCommandProcessor("update", system.UpdateHandle)
 	b.NewCommandProcessor("news", system.NewsHandle)
