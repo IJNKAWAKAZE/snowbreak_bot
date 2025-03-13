@@ -1,11 +1,12 @@
 package datasource
 
 import (
+	"bytes"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/playwright-community/playwright-go"
 	"github.com/spf13/viper"
 	"github.com/starudream/go-lib/core/v2/codec/json"
 	"log"
-	"net/http"
 	"snowbreak_bot/utils"
 )
 
@@ -22,18 +23,33 @@ func UpdateDataSourceRunner() {
 	log.Println("开始更新数据源...")
 	var characterList []utils.Character
 	api := viper.GetString("api.wiki")
-	req, err := http.NewRequest("GET", api+"/snow", nil)
+	pw, err := playwright.Run()
+	if err != nil {
+		log.Println("未检测到playwright，开始自动安装...")
+		playwright.Install()
+		pw, _ = playwright.Run()
+	}
+	browser, err := pw.Chromium.Launch()
+	if err != nil {
+		log.Println(err)
+	}
+	page, _ := browser.NewPage()
+	defer func() {
+		page.Close()
+	}()
+	page.Goto(api+"/snow", playwright.PageGotoOptions{
+		WaitUntil: playwright.WaitUntilStateNetworkidle,
+	})
+	locator, _ := page.Locator(".more")
+	more, _ := locator.Nth(1)
+	err = more.Click()
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	req.Header.Add("User-Agent", viper.GetString("api.user_agent"))
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	page.WaitForTimeout(3000)
+	html, _ := page.Content()
+	doc, err := goquery.NewDocumentFromReader(bytes.NewBufferString(html))
 	if err != nil {
 		return
 	}
@@ -43,7 +59,7 @@ func UpdateDataSourceRunner() {
 				n := selection.Text()
 				var char utils.Character
 				char.Name = n
-				char.ThumbURL = "https:" + selection.Nodes[0].FirstChild.NextSibling.Attr[1].Val
+				char.ThumbURL = "https:" + selection.Nodes[0].FirstChild.NextSibling.Attr[2].Val
 				characterList = append(characterList, char)
 			})
 		}
