@@ -59,7 +59,11 @@ func UpdateDataSourceRunner() {
 				n := selection.Text()
 				var char utils.Character
 				char.Name = n
-				char.ThumbURL = "https:" + selection.Nodes[0].FirstChild.NextSibling.Attr[2].Val
+				for _, attr := range selection.Nodes[0].FirstChild.NextSibling.Attr {
+					if attr.Key == "src" {
+						char.ThumbURL = "https:" + attr.Val
+					}
+				}
 				characterList = append(characterList, char)
 			})
 		}
