@@ -43,7 +43,7 @@ type GroupJoined struct {
 }
 
 // SaveInvite 保存邀请记录
-func SaveInvite(message *tgbotapi.ChatMemberUpdated, member *tgbotapi.User) {
+func SaveInvite(message *tgbotapi.Message, member *tgbotapi.User) {
 	id, _ := gonanoid.New(32)
 	groupInvite := GroupInvite{
 		Id:           id,
@@ -59,7 +59,7 @@ func SaveInvite(message *tgbotapi.ChatMemberUpdated, member *tgbotapi.User) {
 }
 
 // SaveJoined 保存入群记录
-func SaveJoined(message *tgbotapi.ChatMemberUpdated) {
+func SaveJoined(message *tgbotapi.Message) {
 	id, _ := gonanoid.New(32)
 	groupJoined := GroupJoined{
 		Id:          id,
