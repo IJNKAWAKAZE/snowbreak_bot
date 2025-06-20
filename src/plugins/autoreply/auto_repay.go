@@ -82,6 +82,10 @@ func AutoReply(update tgbotapi.Update) error {
 		sendSticker := tgbotapi.NewSticker(chatId, tgbotapi.FileID(config.Reply))
 		sendSticker.ReplyToMessageID = messageId
 		bot.Snowbreak.Send(sendSticker)
+	} else if replyType == "voice" {
+		sendVoice := tgbotapi.NewVoice(chatId, tgbotapi.FileID(config.Reply))
+		sendVoice.ReplyToMessageID = messageId
+		bot.Snowbreak.Send(sendVoice)
 	}
 	return nil
 }

@@ -15,6 +15,9 @@ func FileIDHandle(update tgbotapi.Update) error {
 	if update.Message != nil && update.Message.Sticker != nil {
 		fileID = update.Message.Sticker.FileID
 	}
+	if update.Message != nil && update.Message.Voice != nil {
+		fileID = update.Message.Voice.FileID
+	}
 	sendMessage := tgbotapi.NewMessage(chatId, fileID)
 	sendMessage.ReplyToMessageID = messageId
 	bot.Snowbreak.Send(sendMessage)
