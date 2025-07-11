@@ -37,6 +37,12 @@ func Serve() {
 		}
 		return false
 	}, system.FileIDHandle)
+	b.NewProcessor(func(update tgbotapi.Update) bool {
+		if update.Message != nil && update.Message.Chat.IsPrivate() && update.Message.Voice != nil {
+			return true
+		}
+		return false
+	}, system.FileIDHandle)
 	b.NewMemberProcessor(gatekeeper.JoinedMsgHandle)
 	b.LeftMemberProcessor(gatekeeper.LeftMemberHandle)
 
@@ -52,6 +58,7 @@ func Serve() {
 	b.NewCommandProcessor("ping", system.PingHandle)
 	b.NewCommandProcessor("report", system.ReportHandle)
 	b.NewCommandProcessor("strategy", strategy.StrategyHandle)
+	b.NewCommandProcessor("ask", system.AskHandle)
 	//b.NewCommandProcessor("weapon", weapon.WeaponHandle)
 	// 权限
 	b.NewCommandProcessor("update", system.UpdateHandle)
