@@ -37,6 +37,7 @@ type GroupJoined struct {
 	AutoReply   int64     `json:"autoReply"`
 	ReplyConfig string    `json:"replyConfig"`
 	Reg         int       `json:"reg"`
+	RequestMode int64     `json:"requestMode"`
 	CreateTime  time.Time `json:"createTime" gorm:"autoCreateTime"`
 	UpdateTime  time.Time `json:"updateTime" gorm:"autoUpdateTime"`
 	Remark      string    `json:"remark"`
@@ -68,6 +69,7 @@ func SaveJoined(message *tgbotapi.Message) {
 		News:        0,
 		AutoReply:   0,
 		Reg:         -1,
+		RequestMode: 0,
 	}
 
 	bot.DBEngine.Table("group_joined").Create(&groupJoined)

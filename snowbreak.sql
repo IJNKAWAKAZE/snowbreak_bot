@@ -20,6 +20,7 @@ CREATE TABLE `group_joined`  (
   `auto_reply` int NOT NULL DEFAULT 0,
   `reply_config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
   `reg` int NULL DEFAULT NULL,
+  `request_mode` int(1) NOT NULL DEFAULT 0,
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `create_time` timestamp(0) NULL DEFAULT NULL,
   `update_time` timestamp(0) NULL DEFAULT NULL,

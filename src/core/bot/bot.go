@@ -2,6 +2,7 @@ package bot
 
 import (
 	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
+	"github.com/spf13/viper"
 	"log"
 	bot "snowbreak_bot/config"
 	"snowbreak_bot/plugins/autoreply"
@@ -17,13 +18,10 @@ var now = time.Now().Unix()
 func Serve() {
 	log.Println("机器人启动成功")
 	b := bot.Snowbreak.AddHandle()
-	b.NewProcessor(func(update tgbotapi.Update) bool {
-		member := update.ChatMember
-		if member != nil && int64(member.Date) < now {
-			return false
-		}
-		return member != nil && member.OldChatMember.Status == "left" && member.NewChatMember.Status == "member"
-	}, gatekeeper.NewMemberHandle)
+	bot.Snowbreak.Debug = viper.GetBool("bot.debug")
+	b.NewProcessor(gatekeeper.JoinRequest, gatekeeper.JoinRequestHandle)
+	b.NewMemberProcessor(gatekeeper.NewMemberHandle)
+	b.LeftMemberProcessor(gatekeeper.LeftMemberHandle)
 	b.NewProcessor(autoreply.CheckTrigger, autoreply.AutoReply)
 	b.NewProcessor(func(update tgbotapi.Update) bool {
 		if update.Message != nil && update.Message.Chat.IsPrivate() && len(update.Message.Photo) > 0 {
@@ -43,11 +41,10 @@ func Serve() {
 		}
 		return false
 	}, system.FileIDHandle)
-	b.NewMemberProcessor(gatekeeper.JoinedMsgHandle)
-	b.LeftMemberProcessor(gatekeeper.LeftMemberHandle)
 
 	// callback
 	b.NewCallBackProcessor("verify", gatekeeper.CallBackData)
+	b.NewCallBackProcessor("request_verify", gatekeeper.RequestCallBackData)
 	b.NewCallBackProcessor("report", system.Report)
 
 	// InlineQuery
@@ -58,11 +55,11 @@ func Serve() {
 	b.NewCommandProcessor("ping", system.PingHandle)
 	b.NewCommandProcessor("report", system.ReportHandle)
 	b.NewCommandProcessor("strategy", strategy.StrategyHandle)
-	b.NewCommandProcessor("ask", system.AskHandle)
 	//b.NewCommandProcessor("weapon", weapon.WeaponHandle)
 	// 权限
 	b.NewCommandProcessor("update", system.UpdateHandle)
 	b.NewCommandProcessor("news", system.NewsHandle)
+	b.NewCommandProcessor("request_mode", system.RequestModeHandle)
 	b.NewCommandProcessor("autoreply", autoreply.AutoReplyHandle)
 	b.NewCommandProcessor("reg", system.RegulationHandle)
 	b.NewCommandProcessor("clear", system.ClearHandle)

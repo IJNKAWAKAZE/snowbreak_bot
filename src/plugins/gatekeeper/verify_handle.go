@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-func VerifyMember(message tgbotapi.Update) {
-	chatMember := message.ChatMember
-	chatId := chatMember.Chat.ID
-	userId := chatMember.From.ID
-	name := chatMember.From.FullName()
+func VerifyMember(message *tgbotapi.Message) {
+	chatId := message.Chat.ID
+	userId := message.From.ID
+	name := message.From.FullName()
+	messageId := message.MessageID
 	// 限制用户发送消息
 	_, err := bot.Snowbreak.RestrictChatMember(chatId, userId, tgbotapi.NoMessagesPermission)
 	if err != nil {
@@ -56,29 +56,16 @@ func VerifyMember(message tgbotapi.Update) {
 	var buttons [][]tgbotapi.InlineKeyboardButton
 	for i := 0; i < len(options); i++ {
 		buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(options[i].Name, fmt.Sprintf("verify,%d,%s", userId, options[i].Name)),
+			tgbotapi.NewInlineKeyboardButtonData(options[i].Name, fmt.Sprintf("verify,%d,%s,%d", userId, options[i].Name, messageId)),
 		))
 	}
 	buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("✅放行", fmt.Sprintf("verify,%d,PASS", userId)),
-		tgbotapi.NewInlineKeyboardButtonData("🚫封禁", fmt.Sprintf("verify,%d,BAN", userId)),
+		tgbotapi.NewInlineKeyboardButtonData("✅放行", fmt.Sprintf("verify,%d,PASS,%d", userId, messageId)),
+		tgbotapi.NewInlineKeyboardButtonData("🚫封禁", fmt.Sprintf("verify,%d,BAN,%d", userId, messageId)),
 	))
 	inlineKeyboardMarkup := tgbotapi.NewInlineKeyboardMarkup(
 		buttons...,
 	)
-	/*pic, err := http.Get(correct.ThumbURL)
-	if err != nil {
-		log.Println("获取图片失败", err)
-		return
-	}
-	m, err := png.Decode(pic.Body)
-	if err != nil {
-		log.Println("解析图片失败", err)
-		return
-	}
-	resize := resize.Resize(0, 2000, m, resize.Lanczos3)
-	buf := new(bytes.Buffer)
-	png.Encode(buf, resize)*/
 	sendPhoto := tgbotapi.NewPhoto(chatId, tgbotapi.FilePath(correct.ThumbURL))
 	sendPhoto.ReplyMarkup = inlineKeyboardMarkup
 	sendPhoto.Caption = fmt.Sprintf("欢迎[%s](tg://user?id=%d)，请选择上图角色的正确名字，60秒未选择自动踢出。", tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, name), userId)
@@ -90,7 +77,7 @@ func VerifyMember(message tgbotapi.Update) {
 		return
 	}
 	verifySet.add(userId, chatId, correct.Name)
-	go verify(chatId, userId, photo.MessageID)
+	go verify(chatId, userId, photo.MessageID, messageId)
 }
 
 func unban(chatId, userId int64) {
@@ -98,7 +85,7 @@ func unban(chatId, userId int64) {
 	bot.Snowbreak.UnbanChatMember(chatId, userId)
 }
 
-func verify(chatId int64, userId int64, messageId int) {
+func verify(chatId int64, userId int64, messageId int, joinMessageId int) {
 	time.Sleep(time.Minute)
 	if has, _ := verifySet.checkExistAndRemove(userId, chatId); !has {
 		return
@@ -106,6 +93,9 @@ func verify(chatId int64, userId int64, messageId int) {
 
 	// 踢出超时未验证用户
 	bot.Snowbreak.BanChatMember(chatId, userId)
+	// 删除用户入群提醒
+	delJoinMessage := tgbotapi.NewDeleteMessage(chatId, joinMessageId)
+	bot.Snowbreak.Send(delJoinMessage)
 	// 删除入群验证消息
 	delMsg := tgbotapi.NewDeleteMessage(chatId, messageId)
 	bot.Snowbreak.Send(delMsg)

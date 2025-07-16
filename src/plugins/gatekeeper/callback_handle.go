@@ -21,6 +21,7 @@ func CallBackData(callBack tgbotapi.Update) error {
 
 	userId, _ := strconv.ParseInt(d[1], 10, 64)
 	chatId := callbackQuery.Message.Chat.ID
+	joinMessageId, _ := strconv.Atoi(d[3])
 
 	if d[2] == "PASS" || d[2] == "BAN" {
 
@@ -35,7 +36,7 @@ func CallBackData(callBack tgbotapi.Update) error {
 			}
 
 			if d[2] == "BAN" {
-				ban(chatId, userId, callbackQuery)
+				ban(chatId, userId, callbackQuery, joinMessageId)
 			}
 		}
 		return nil
@@ -48,7 +49,7 @@ func CallBackData(callBack tgbotapi.Update) error {
 	if has, correct := verifySet.checkExistAndRemove(userId, chatId); has {
 		if d[2] != correct {
 			callbackQuery.Answer(true, "验证未通过，请一分钟后再试！")
-			ban(chatId, userId, callbackQuery)
+			ban(chatId, userId, callbackQuery, joinMessageId)
 			go unban(chatId, userId)
 			return nil
 		}
@@ -64,7 +65,7 @@ func pass(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery, adm
 	bot.Snowbreak.RestrictChatMember(chatId, userId, tgbotapi.AllPermissions)
 	callbackQuery.Delete()
 	if !adminPass {
-		// 新人发送box提醒
+		// 新人入群提醒
 		text := fmt.Sprintf("欢迎[%s](tg://user?id=%d)\n", tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, callbackQuery.From.FullName()), callbackQuery.From.ID)
 		var joined utils.GroupJoined
 		utils.GetJoinedByChatId(chatId).Scan(&joined)
@@ -83,7 +84,9 @@ func pass(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery, adm
 	return nil
 }
 
-func ban(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery) {
+func ban(chatId int64, userId int64, callbackQuery *tgbotapi.CallbackQuery, joinMessageId int) {
 	bot.Snowbreak.BanChatMember(chatId, userId)
 	callbackQuery.Delete()
+	delJoinMessage := tgbotapi.NewDeleteMessage(chatId, joinMessageId)
+	bot.Snowbreak.Send(delJoinMessage)
 }
