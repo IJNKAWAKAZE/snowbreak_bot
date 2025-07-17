@@ -44,7 +44,7 @@ func Serve() {
 
 	// callback
 	b.NewCallBackProcessor("verify", gatekeeper.CallBackData)
-	b.NewCallBackProcessor("request_verify", gatekeeper.RequestCallBackData)
+	b.NewCallBackProcessor("request", gatekeeper.RequestCallBackData)
 	b.NewCallBackProcessor("report", system.Report)
 
 	// InlineQuery
